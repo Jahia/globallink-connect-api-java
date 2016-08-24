@@ -1,1 +1,0 @@
-# globallink-connect-api
