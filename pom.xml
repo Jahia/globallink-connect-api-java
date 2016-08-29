@@ -1,10 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<parent>
-		<groupId>org.gs4tr</groupId>
-		<artifactId>gs4tr</artifactId>
-		<version>6</version>
-	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
  
@@ -14,12 +9,6 @@
 
 	<packaging>jar</packaging>
 	<name>GlobalLink Client Library</name>
-
-	<scm>
-		<connection>scm:svn:http://devsf.translations.com/svn/gs4tr/products/projectdirector-adaptors/projectdirector-adaptors-glcapi.java/trunk</connection>
-		<developerConnection>scm:svn:http://devsf.translations.com/svn/gs4tr/products/projectdirector-adaptors/projectdirector-adaptors-glcapi.java/trunk</developerConnection>
-		<url>https://devsf.translations.com/websvn/tags/gs4tr-projectdirector-adaptors-glcapi.java</url>
-	</scm>
 
 	<properties>
 		<versionPackageName>org.gs4tr.projectdirector.adaptors.glcl.java</versionPackageName>
@@ -71,57 +60,6 @@
 					<source>1.7</source>
 					<target>1.7</target>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>new-timestamp-property</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>timestamp-property</goal>
-						</goals>
-						<configuration>
-							<name>newTimestamp</name>
-							<!--pattern>yyyyMMdd</pattern -->
-							<pattern>MMdd</pattern>
-							<locale>en_US</locale>
-						</configuration>
-					</execution>
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>target/generated-sources</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.gs4tr.maven.plugins</groupId>
-				<artifactId>gs4tr-maven-version-plugin</artifactId>
-				<version>${releaseControl.version}</version>
-				<extensions>true</extensions>
-				<configuration>
-					<skipArtifacts>
-						<skipArtifact>
-							maven-eclipse-plugin
-						</skipArtifact>
-					</skipArtifacts>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>version</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
