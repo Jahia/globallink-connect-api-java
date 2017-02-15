@@ -1,9 +1,9 @@
 package com.globallink.api.model;
 
-import org.gs4tr.projectdirector.model.dto.FileFormatProfile;
-import org.gs4tr.projectdirector.model.dto.ProjectCustomFieldConfiguration;
-import org.gs4tr.projectdirector.model.dto.ProjectLanguageDirection;
-import org.gs4tr.projectdirector.model.dto.WorkflowDefinition;
+import org.gs4tr.projectdirector.model.dto.xsd.FileFormatProfile;
+import org.gs4tr.projectdirector.model.dto.xsd.ProjectCustomFieldConfiguration;
+import org.gs4tr.projectdirector.model.dto.xsd.ProjectLanguageDirection;
+import org.gs4tr.projectdirector.model.dto.xsd.WorkflowDefinition;
 
 public class Project {
     /**
@@ -40,7 +40,7 @@ public class Project {
      */
     private Workflow[] workflows;
 
-    public Project(org.gs4tr.projectdirector.model.dto.Project project) {
+    public Project(org.gs4tr.projectdirector.model.dto.xsd.Project project) {
 	super();
 	this.shortcode = project.getProjectInfo().getShortCode();
 	this.name = project.getProjectInfo().getName();

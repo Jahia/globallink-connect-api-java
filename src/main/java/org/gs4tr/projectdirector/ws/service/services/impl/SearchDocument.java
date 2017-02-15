@@ -6,9 +6,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.gs4tr.projectdirector.model.dto.DocumentSearchRequest;
-import org.gs4tr.projectdirector.model.dto.PagedListInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.DocumentSearchRequest;
+import org.gs4tr.projectdirector.model.dto.xsd.PagedListInfo;
 
 
 /**

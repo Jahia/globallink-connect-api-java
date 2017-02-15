@@ -1,6 +1,6 @@
 package com.globallink.api.model;
 
-import org.gs4tr.projectdirector.model.dto.WorkflowDefinition;
+import org.gs4tr.projectdirector.model.dto.xsd.WorkflowDefinition;
 
 public class Workflow {
     public String name;

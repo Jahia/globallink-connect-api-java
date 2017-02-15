@@ -3,41 +3,46 @@ package com.globallink.api;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
+import java.net.Authenticator;
 import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.gs4tr.projectdirector.model.dto.DocumentInfo;
-import org.gs4tr.projectdirector.model.dto.DocumentTicket;
-import org.gs4tr.projectdirector.model.dto.DownloadActionResult;
-import org.gs4tr.projectdirector.model.dto.ItemStatusEnum;
-import org.gs4tr.projectdirector.model.dto.Metadata;
-import org.gs4tr.projectdirector.model.dto.Priority;
-import org.gs4tr.projectdirector.model.dto.RepositoryItem;
-import org.gs4tr.projectdirector.model.dto.ResourceInfo;
-import org.gs4tr.projectdirector.model.dto.SubmissionCustomFields;
-import org.gs4tr.projectdirector.model.dto.SubmissionInfo;
-import org.gs4tr.projectdirector.model.dto.SubmissionWorkflowInfo;
-import org.gs4tr.projectdirector.model.dto.UploadActionResult;
-import org.gs4tr.projectdirector.model.dto.UserInfo;
-import org.gs4tr.projectdirector.model.dto.UserProfile;
-import org.gs4tr.projectdirector.model.dto.WorkflowRequest;
-import org.gs4tr.projectdirector.model.dto.WorkflowRequestTicket;
+import org.gs4tr.projectdirector.model.dto.xsd.DocumentInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.DocumentTicket;
+import org.gs4tr.projectdirector.model.dto.xsd.DownloadActionResult;
+import org.gs4tr.projectdirector.model.dto.xsd.ItemStatusEnum;
+import org.gs4tr.projectdirector.model.dto.xsd.Metadata;
+import org.gs4tr.projectdirector.model.dto.xsd.Priority;
+import org.gs4tr.projectdirector.model.dto.xsd.RepositoryItem;
+import org.gs4tr.projectdirector.model.dto.xsd.ResourceInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.SubmissionCustomFields;
+import org.gs4tr.projectdirector.model.dto.xsd.SubmissionInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.SubmissionWorkflowInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.UploadActionResult;
+import org.gs4tr.projectdirector.model.dto.xsd.UserInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.UserProfile;
+import org.gs4tr.projectdirector.model.dto.xsd.WorkflowRequest;
+import org.gs4tr.projectdirector.model.dto.xsd.WorkflowRequestTicket;
 import org.gs4tr.projectdirector.ws.service.services.impl.ServiceLocator;
 import org.w3._2005._05.xmlmime.Base64Binary;
 
 import com.globallink.api.config.ProjectDirectorConfig;
-import com.globallink.api.config.ProxyConfig;
+import com.globallink.api.model.Batch;
 import com.globallink.api.model.CustomAttribute;
 import com.globallink.api.model.Document;
 import com.globallink.api.model.LanguageDirection;
+import com.globallink.api.model.LanguagePhaseInfo;
 import com.globallink.api.model.Project;
 import com.globallink.api.model.ReferenceDocument;
 import com.globallink.api.model.Submission;
@@ -53,7 +58,7 @@ public class GLExchange {
 
     private static final String[] EMPTY_ARRAY = new String[0];
 
-    private static final String PDVERSION = "4.13.0";
+    private static final String PDVERSION = "4.18.0";
 
     private static final int WORKFLOW_LIMIT = 9999; // Sets the max number of
 
@@ -65,6 +70,8 @@ public class GLExchange {
     private ServiceLocator serviceLocator;
 
     private Submission submission;
+    
+    private Project[] projects;
 
     /**
      * Initialize a connection to Project Director
@@ -75,14 +82,23 @@ public class GLExchange {
      */
     public GLExchange(ProjectDirectorConfig connectionConfig) throws Exception {
 	super();
-	System.setProperty("jsse.enableSNIExtension", "false");
-	_setConnectionConfig(connectionConfig);
-
+	   _setConnectionConfig(connectionConfig);
+	
+    }
+    
+    private Batch[] _convertBatchesToInternal(List<org.gs4tr.projectdirector.model.dto.xsd.Batch> batches) {
+	List<Batch> result = new ArrayList<Batch>();
+	if (batches != null) {
+	    for (org.gs4tr.projectdirector.model.dto.xsd.Batch batch : batches) {
+		result.add(new Batch(batch));
+	    }
+	}
+	return result.toArray(new Batch[result.size()]);
     }
 
-    private Project[] _convertProjectsToInternal(List<org.gs4tr.projectdirector.model.dto.Project> projects) {
+    private Project[] _convertProjectsToInternal(List<org.gs4tr.projectdirector.model.dto.xsd.Project> projects) {
 	List<Project> result = new ArrayList<Project>();
-	for (org.gs4tr.projectdirector.model.dto.Project project : projects) {
+	for (org.gs4tr.projectdirector.model.dto.xsd.Project project : projects) {
 	    Project proj = new Project(project);
 	    proj.setSubmitters(_getSubmitters(proj.getShortcode()));
 	    result.add(proj);
@@ -91,18 +107,18 @@ public class GLExchange {
 	return result.toArray(new Project[result.size()]);
     }
 
-    private Submission[] _convertSubmissionsToInternal(List<org.gs4tr.projectdirector.model.dto.Submission> list) {
+    private Submission[] _convertSubmissionsToInternal(List<org.gs4tr.projectdirector.model.dto.xsd.Submission> list) {
 	List<Submission> result = new ArrayList<Submission>();
-	for (org.gs4tr.projectdirector.model.dto.Submission sub : list) {
+	for (org.gs4tr.projectdirector.model.dto.xsd.Submission sub : list) {
 	    result.add(new Submission(sub));
 	}
 	return result.toArray(new Submission[result.size()]);
     }
 
-    private Target[] _convertTargetsToInternal(List<org.gs4tr.projectdirector.model.dto.Target> targets) {
+    private Target[] _convertTargetsToInternal(List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets) {
 	List<Target> result = new ArrayList<Target>();
 	if (targets != null) {
-	    for (org.gs4tr.projectdirector.model.dto.Target target : targets) {
+	    for (org.gs4tr.projectdirector.model.dto.xsd.Target target : targets) {
 		result.add(new Target(target));
 	    }
 	}
@@ -133,19 +149,19 @@ public class GLExchange {
     private SubmissionInfo _createSubmissionInfo(Integer count) {
 	SubmissionInfo submissionInfo = new SubmissionInfo();
 	if (submission.getCustomAttributes() != null && submission.getCustomAttributes().size() > 0) {
-	    List<SubmissionCustomFields> customFields = new ArrayList<SubmissionCustomFields>();
 	    for (Map.Entry<String, String> entry : submission.getCustomAttributes().entrySet()) {
 		SubmissionCustomFields customField = new SubmissionCustomFields();
 		customField.setFieldName(entry.getKey());
 		customField.setFieldValue(entry.getValue());
-		customFields.add(customField);
+		submissionInfo.getSubmissionCustomFields().add(customField);
 	    }
-	    submissionInfo.setSubmissionCustomFields(customFields);
 	}
 
 	if (submission.getDueDate() != null) {
+	    org.gs4tr.projectdirector.model.dto.xsd.Date date = new org.gs4tr.projectdirector.model.dto.xsd.Date();
+	    date.setDate(submission.getDueDate().getTime());
 	    submissionInfo
-		    .setDateRequested(new org.gs4tr.projectdirector.model.dto.Date(submission.getDueDate().getTime()));
+		    .setDateRequested(date);
 	}
 
 	submissionInfo.setProjectTicket(submission.getProject().getTicket());
@@ -159,24 +175,22 @@ public class GLExchange {
 	    submissionInfo.setInternalNotes(submission.getPmNotes());
 	}
 	if (submission.getMetadata() != null) {
-	    List<Metadata> metadata = new ArrayList<Metadata>();
 	    for (Map.Entry<String, String> entry : submission.getMetadata().entrySet()) {
 		Metadata data = new Metadata();
 		data.setKey(entry.getKey().length() > 255 ? entry.getKey().substring(0, 255) : entry.getKey());
 		data.setValue(
 			entry.getValue().length() > 1024 ? entry.getValue().substring(0, 1024) : entry.getValue());
-		metadata.add(data);
+		submissionInfo.getMetadata().add(data);
 	    }
-	    submissionInfo.setMetadata(metadata);
 	}
 
 	if (submission.isUrgent()) {
-	    submissionInfo.setPriority(new Priority(2));
+	    Priority priority = new Priority();
+	    priority.setValue(2);
+	    submissionInfo.setPriority(priority);
 	}
 	if (!_isEmpty(submission.getSubmitter())) {
-	    List<String> submitters = new ArrayList<String>();
-	    submitters.add(submission.getSubmitter());
-	    submissionInfo.setSubmitters(submitters);
+	    submissionInfo.getSubmitters().add(submission.getSubmitter());
 	}
 	if (submission.getWorkflow() != null && !_isEmpty(submission.getWorkflow().ticket)) {
 	    submissionInfo.setWorkflowDefinitionTicket(submission.getWorkflow().ticket);
@@ -190,44 +204,53 @@ public class GLExchange {
 	WorkflowRequest workflowRequest = new WorkflowRequest();
 	workflowRequest.setSubmissionTicket(submissionWorkflowInfo.getSubmissionTicket());
 	workflowRequest.setPhaseName(submissionWorkflowInfo.getPhaseName());
-	workflowRequest.setBatchWorkflowInfos(submissionWorkflowInfo.getBatchWorkflowInfos());
-	workflowRequest.setLanguageWorkflowInfos(submissionWorkflowInfo.getLanguageWorkflowInfos());
-	workflowRequest.setTargetWorkflowInfos(submissionWorkflowInfo.getTargetWorkflowInfos());
+	workflowRequest.getBatchWorkflowInfos().addAll(submissionWorkflowInfo.getBatchWorkflowInfos());
+	workflowRequest.getLanguageWorkflowInfos().addAll(submissionWorkflowInfo.getLanguageWorkflowInfos());
+	workflowRequest.getTargetWorkflowInfos().addAll(submissionWorkflowInfo.getTargetWorkflowInfos());
 
 	return workflowRequest;
     }
 
-    private void _endpointExists(ProjectDirectorConfig connectionConfig) throws Exception {
-	
-	
-	/*
-	 * 
+    private void _endpointExists() throws Exception {
 	String urlStr = pdConfig.getUrl();
-	ProxyConfig pc = connectionConfig.getProxy();
-	Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(pc.getProxyHost(), pc.getProxyPort()));
-	
-	    HttpURLConnection httpUrlConnection = (HttpURLConnection) new URL(
-		    urlStr).openConnection();
-	     
-	    httpUrlConnection.setRequestMethod("HEAD");
-
-	    try
-	    {
-	        int responseCode = httpUrlConnection.getResponseCode();
-
-	        
-	    } catch (UnknownHostException noInternetConnection)
-	    {
-	        return false;
+	Proxy proxy = null;
+	if (pdConfig.getProxy() != null && !_isEmpty(pdConfig.getProxy().getProxyHost())) {
+	    proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(pdConfig.getProxy().getProxyHost(), pdConfig.getProxy().getProxyPort()!=0?pdConfig.getProxy().getProxyPort():80));
+	    if(pdConfig.getProxy().getProxyUser()!=null && pdConfig.getProxy().getProxyPassword()!=null){
+		Authenticator.setDefault (new Authenticator() {
+		    protected PasswordAuthentication getPasswordAuthentication() {
+		        return new PasswordAuthentication (pdConfig.getProxy().getProxyUser(), pdConfig.getProxy().getProxyPassword().toCharArray());
+		    }
+		});
 	    }
 	}
 	try {
+	    URL url = new URL(urlStr);
+	    URLConnection conn = null;
+	    if(proxy!=null){
+		conn = url.openConnection(proxy);
+	    } else {
+		conn = url.openConnection();
+	    }
+	    conn.getInputStream();
+	} catch (Exception e) {
+	    throw new Exception("No connection to "+urlStr, e);
+	}
+	if (!urlStr.endsWith("/")) {
+	    urlStr = urlStr + "/";
+	}
+	try {
 	    URL url = new URL(urlStr + "services/ProjectService" + ServiceLocator.WS_VERSION + ".wsdl");
-	    url.openStream();
+	    URLConnection conn = null;
+	    if(proxy!=null){
+		conn = url.openConnection(proxy);
+	    } else {
+		conn = url.openConnection();
+	    }
+	    conn.getInputStream();
 	} catch (Exception e) {
 	    throw new Exception("Unsupported PD version, needs to be " + PDVERSION + " or higher.");
 	}
-*/
     }
 
     private Boolean _isEmpty(String value) {
@@ -273,11 +296,11 @@ public class GLExchange {
     private void _setConnectionConfig(ProjectDirectorConfig connectionConfig) throws Exception {
 	pdConfig = connectionConfig;
 
-	try {
-	    _endpointExists(connectionConfig);
+	/*try {
+	    _endpointExists();
 	} catch (Exception e) {
 	    throw e;
-	}
+	}*/
 	pdConfig.setEnableMTOM(false); // PDII-12096
 	if (_isEmpty(pdConfig.getUrl()))
 	    throw new Exception("Invalid URL");
@@ -298,7 +321,7 @@ public class GLExchange {
 		serviceLocator = new ServiceLocator(pdConfig.getUrl(), pdConfig.getUsername(), pdConfig.getPassword(),
 			pdConfig.getUserAgent(), pdConfig.isEnableMTOM());
 	    }
-	    //serviceLocator.getProjectService().getUserProjects(false);
+	    this.projects = getProjects();
 	} catch (Exception e) {
 	    throw new Exception("Invalid Config: " + e.getMessage(), e);
 	}
@@ -619,6 +642,32 @@ public class GLExchange {
 	    return null;
 	}
     }
+    
+    public Map<String, Set<String>> getAvailableLanguageDirections() throws Exception {
+	Map<String, Set<String>> result = new HashMap<String, Set<String>>();
+	for(Project project : projects){
+	    for(LanguageDirection direction : project.getLanguageDirections()){
+		if(result.containsKey(direction.sourceLanguage)){
+		    result.get(direction.sourceLanguage).add(direction.targetLanguage);
+		} else {
+		    Set<String> targetLanguages = new HashSet<String>();
+		    targetLanguages.add(direction.targetLanguage);
+		    result.put(direction.sourceLanguage, targetLanguages);
+		}
+	    }
+	}
+	return result;
+    }
+
+    public String[] getAvailableTargetLocales() throws Exception {
+	Set<String> targetLanguages = new HashSet<String>();
+	for(Project project : projects){
+	    for(LanguageDirection direction : project.getLanguageDirections()){
+		targetLanguages.add(direction.targetLanguage);
+	    }
+	}
+	return targetLanguages.toArray(new String[targetLanguages.size()]);
+    }
 
     public String[] getAvailableSubmissions(String STATE) throws Exception {
 	List<SubmissionWorkflowInfo> swi = null;
@@ -650,14 +699,70 @@ public class GLExchange {
      * @return Array of cancelled targets
      */
     public Target[] getCancelledTargets(int maxResults) {
-	List<org.gs4tr.projectdirector.model.dto.Project> userProjects = serviceLocator.getProjectService()
-		.getUserProjects(true);
 	List<String> projectTickets = new ArrayList<String>();
-	for (org.gs4tr.projectdirector.model.dto.Project userProject : userProjects) {
+	for (Project userProject : this.projects) {
 	    projectTickets.add(userProject.getTicket());
 	}
-	List<org.gs4tr.projectdirector.model.dto.Target> targets = serviceLocator.getTargetService()
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
 		.getCanceledTargetsByProjects(projectTickets, maxResults);
+	return _convertTargetsToInternal(targets);
+    }
+    
+    /**
+     * Get cancelled targets for a list of submissions
+     * 
+     * @param submissionTickets
+     *            List of submission tickets
+     * @param maxResults
+     *            Maximum number of cancelled targets to return. This
+     *            configuration is to avoid time-outs in case the number of
+     *            targets is very large.
+     * @return Array of cancelled targets
+     */
+
+    public Target[] getCancelledTargetsBySubmissions(List<String> submissionTickets, int maxResults) {
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCanceledTargetsBySubmissions(submissionTickets, maxResults);
+	return _convertTargetsToInternal(targets);
+    }
+    
+    /**
+     * Get cancelled targets for a list of documents
+     * 
+     * @param documentTickets
+     *            List of document tickets
+     * @param maxResults
+     *            Maximum number of cancelled targets to return. This
+     *            configuration is to avoid time-outs in case the number of
+     *            targets is very large.
+     * @return Array of cancelled targets
+     */
+
+    public Target[] getCancelledTargetsByDocuments(List<String> documentTickets, int maxResults) {
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCanceledTargetsByDocuments(documentTickets, maxResults);
+	return _convertTargetsToInternal(targets);
+    }
+    
+    /**
+     * Get cancelled targets for a list of documents
+     * 
+     * @param documentTickets
+     *            List of document tickets
+     * @param maxResults
+     *            Maximum number of cancelled targets to return. This
+     *            configuration is to avoid time-outs in case the number of
+     *            targets is very large.
+     * @return Array of cancelled targets
+     */
+
+    public Target[] getCancelledTargetsByProjects(List<Project> projects, int maxResults) {
+	List<String> tickets = new ArrayList<String>();
+	for(Project project : projects){
+	    tickets.add(project.getTicket());
+	}
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCanceledTargetsByProjects(tickets, maxResults);
 	return _convertTargetsToInternal(targets);
     }
 
@@ -676,9 +781,7 @@ public class GLExchange {
     public Target[] getCancelledTargets(String submissionTicket, int maxResults) {
 	List<String> tickets = new ArrayList<String>();
 	tickets.add(submissionTicket);
-	List<org.gs4tr.projectdirector.model.dto.Target> targets = serviceLocator.getTargetService()
-		.getCanceledTargetsBySubmissions(tickets, maxResults);
-	return _convertTargetsToInternal(targets);
+	return getCancelledTargetsBySubmissions(tickets, maxResults);
     }
 
     /**
@@ -689,14 +792,32 @@ public class GLExchange {
      * @return Array of completed targets
      */
     public Target[] getCompletedTargets(int maxResults) {
-	List<org.gs4tr.projectdirector.model.dto.Project> userProjects = serviceLocator.getProjectService()
-		.getUserProjects(true);
 	List<String> projectTickets = new ArrayList<String>();
-	for (org.gs4tr.projectdirector.model.dto.Project userProject : userProjects) {
+	for (Project userProject : projects) {
 	    projectTickets.add(userProject.getTicket());
 	}
-	List<org.gs4tr.projectdirector.model.dto.Target> targets = serviceLocator.getTargetService()
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
 		.getCompletedTargetsByProjects(projectTickets, maxResults);
+	return _convertTargetsToInternal(targets);
+    }
+    
+    /**
+     * Get completed targets for list of projects
+     * 
+     * @param projects
+     *            List of projects for which completed targets are requested
+     * @param maxResults
+     *            Maximum number of completed targets to return in this call.
+     * @return Array of completed targets
+     */
+
+    public Target[] getCompletedTargetsByProjects(List<Project> projects, int maxResults) {
+	List<String> tickets = new ArrayList<String>();
+	for(Project project : projects){
+	    tickets.add(project.getTicket());
+	}
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCompletedTargetsByProjects(tickets, maxResults);
 	return _convertTargetsToInternal(targets);
     }
 
@@ -713,8 +834,23 @@ public class GLExchange {
     public Target[] getCompletedTargets(Project project, int maxResults) {
 	List<String> tickets = new ArrayList<String>();
 	tickets.add(project.getTicket());
-	List<org.gs4tr.projectdirector.model.dto.Target> targets = serviceLocator.getTargetService()
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
 		.getCompletedTargetsByProjects(tickets, maxResults);
+	return _convertTargetsToInternal(targets);
+    }
+    
+    /**
+     * Get completed targets for list of submissions
+     * 
+     * @param submissionTickets
+     *            List of submission tickets for which completed targets are requested
+     * @param maxResults
+     *            Maximum number of completed targets to return in this call.
+     * @return Array of completed targets
+     */
+    public Target[] getCompletedTargetsBySubmissions(List<String> submissionTickets, int maxResults) {
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCompletedTargetsBySubmissions(submissionTickets, maxResults);
 	return _convertTargetsToInternal(targets);
     }
 
@@ -730,7 +866,7 @@ public class GLExchange {
     public Target[] getCompletedTargets(String submissionTicket, int maxResults) {
 	List<String> tickets = new ArrayList<String>();
 	tickets.add(submissionTicket);
-	List<org.gs4tr.projectdirector.model.dto.Target> targets = serviceLocator.getTargetService()
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
 		.getCompletedTargetsBySubmissions(tickets, maxResults);
 	return _convertTargetsToInternal(targets);
     }
@@ -745,9 +881,47 @@ public class GLExchange {
      * @return Array of completed targets
      */
     public Target[] getCompletedTargetsByDocuments(List<String> documentTickets, int maxResults) {
-	List<org.gs4tr.projectdirector.model.dto.Target> targets = serviceLocator.getTargetService()
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
 		.getCompletedTargetsByDocuments(documentTickets, maxResults);
 	return _convertTargetsToInternal(targets);
+    }
+    
+    /**
+     * Get completed targets by specified document ticket
+     * 
+     * @param documentTicket
+     *            Document ticket
+     * @param maxResults
+     *            Maximum number of completed targets to return in this call.
+     * @return Array of completed targets
+     */
+    public Target[] getCompletedTargetsByDocument(String documentTicket, int maxResults) {
+	List<String> tickets = new ArrayList<String>();
+	tickets.add(documentTicket);
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCompletedTargetsByDocuments(tickets, maxResults);
+	return _convertTargetsToInternal(targets);
+    }
+
+    /**
+     * Get language phase info with TMStatistics
+     * 
+     * @param submissionTicket
+     *            Submission`s ticket
+     * @param batchName
+     *            Batch name
+     * @param targetLanguage
+     *            Target language
+     * @param phaseName
+     *            Phase name
+     * @return LanguagePhaseInfo object
+     */
+    public LanguagePhaseInfo getLanguagePhaseInfo(String submissionTicket, String batchName, String targetLanguage, String phaseName){
+	org.gs4tr.projectdirector.model.dto.xsd.LanguagePhaseInfo result = serviceLocator.getTargetService().getLanguagePhaseInfo(submissionTicket, batchName, targetLanguage, phaseName);
+	if (result != null) {
+	    return new LanguagePhaseInfo(result);
+	}
+	return null;
     }
 
     /**
@@ -758,7 +932,12 @@ public class GLExchange {
      * @return Project with specified shortcode
      */
     public Project getProject(String shortCode) {
-	org.gs4tr.projectdirector.model.dto.Project project = serviceLocator.getProjectService()
+	for(Project project : projects){
+	    if(shortCode.equals(project.getShortcode())){
+		return project;
+	    }
+	}
+	org.gs4tr.projectdirector.model.dto.xsd.Project project = serviceLocator.getProjectService()
 		.findProjectByShortCode(shortCode);
 	Project proj = new Project(project);
 	proj.setSubmitters(_getSubmitters(shortCode));
@@ -772,9 +951,31 @@ public class GLExchange {
      *         has access to
      */
     public Project[] getProjects() {
-	List<org.gs4tr.projectdirector.model.dto.Project> projects = serviceLocator.getProjectService()
+	List<org.gs4tr.projectdirector.model.dto.xsd.Project> projects = serviceLocator.getProjectService()
 		.getUserProjects(true);
 	return _convertProjectsToInternal(projects);
+    }
+    
+    /**
+     * Get Submission batches
+     * 
+     * @param submissionTicket
+     *            Submission`s ticket
+     * @return Array of submission Batches
+     */
+    public Batch[] getSubmissionBatches(String submissionTicket){
+	return _convertBatchesToInternal(serviceLocator.getSubmissionService().findByTicket(submissionTicket).getBatches());
+    }
+    
+    /**
+     * Get Submission Id
+     * 
+     * @param submissionTicket
+     *            Submission`s ticket
+     * @return Submission Id
+     */
+    public Long getSubmissionId(String submissionTicket){
+	return serviceLocator.getSubmissionService().findByTicket(submissionTicket).getSubmissionId();
     }
 
     /**
@@ -784,7 +985,7 @@ public class GLExchange {
      * @throws Exception
      */
     public String getSubmissionName(String submissionTicket) throws Exception {
-	org.gs4tr.projectdirector.model.dto.Submission sub = serviceLocator.getSubmissionService()
+	org.gs4tr.projectdirector.model.dto.xsd.Submission sub = serviceLocator.getSubmissionService()
 		.findByTicket(submissionTicket);
 	if (sub != null) {
 	    return sub.getSubmissionInfo().getName();
@@ -837,7 +1038,7 @@ public class GLExchange {
      * @throws Exception
      */
     public boolean isSubmissionComplete(String submissionTicket) throws Exception {
-	org.gs4tr.projectdirector.model.dto.Submission sub = serviceLocator.getSubmissionService()
+	org.gs4tr.projectdirector.model.dto.xsd.Submission sub = serviceLocator.getSubmissionService()
 		.findByTicket(submissionTicket);
 	boolean status = false;
 	if (sub != null && sub.getStatus().equals(ItemStatusEnum.PROCESSED)) {
@@ -855,7 +1056,7 @@ public class GLExchange {
      * @throws Exception
      */
     public String getSubmissionStatus(String submissionTicket) throws Exception {
-	org.gs4tr.projectdirector.model.dto.Submission sub = serviceLocator.getSubmissionService()
+	org.gs4tr.projectdirector.model.dto.xsd.Submission sub = serviceLocator.getSubmissionService()
 		.findByTicket(submissionTicket);
 
 	if (sub != null) {

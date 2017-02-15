@@ -1,6 +1,6 @@
 package com.globallink.api.model;
 
-import org.gs4tr.projectdirector.model.dto.ProjectLanguageDirection;
+import org.gs4tr.projectdirector.model.dto.xsd.ProjectLanguageDirection;
 
 /**
  * A language direction defines the source and target language direction for

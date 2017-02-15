@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
-import org.gs4tr.projectdirector.model.dto.ResourceInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.ResourceInfo;
 
 /**
  * Reference documents contain additional information which provide more context

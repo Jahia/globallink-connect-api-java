@@ -3,9 +3,10 @@ package com.globallink.api.model;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.gs4tr.projectdirector.model.dto.Metadata;
-import org.gs4tr.projectdirector.model.dto.TmStatistics;
+import org.gs4tr.projectdirector.model.dto.xsd.Metadata;
+import org.gs4tr.projectdirector.model.dto.xsd.TmStatistics;
 
 import com.globallink.api.GLExchange;
 
@@ -14,14 +15,14 @@ public class Target {
     private InputStream data;
     private String documentName;
     private String documentTicket;
-    private HashMap<String, String> metadata;
+    private Map<String, String> metadata;
     private String sourceLocale;
     private String submissionName;
     private String targetLocale;
     private String ticket;
     private WordCount wordCount;
 
-    public Target(org.gs4tr.projectdirector.model.dto.Target dtoTarget) {
+    public Target(org.gs4tr.projectdirector.model.dto.xsd.Target dtoTarget) {
 	super();
 	this.documentName = dtoTarget.getDocument().getDocumentInfo().getName();
 	this.targetLocale = dtoTarget.getTargetLanguage().getLocale();
@@ -31,7 +32,7 @@ public class Target {
 	TmStatistics tmstats = dtoTarget.getTmStatistics();
 	if (tmstats != null) {
 
-	    this.wordCount = new WordCount(tmstats.getGoldWordCount(), tmstats
+	    this.wordCount = new WordCount(tmstats.getInContextMatchWordCount(), tmstats
 		    .getOneHundredMatchWordCount(), tmstats
 		    .getRepetitionWordCount(), tmstats.getNoMatchWordCount(),
 		    tmstats.getTotalWordCount());
@@ -83,7 +84,7 @@ public class Target {
      * 
      * @return Metadata
      */
-    public HashMap<String, String> getMetadata() {
+    public Map<String, String> getMetadata() {
 	return metadata;
     }
 

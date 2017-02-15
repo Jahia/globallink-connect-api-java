@@ -6,8 +6,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.gs4tr.projectdirector.model.dto.ResourceInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.ResourceInfo;
 import org.w3._2005._05.xmlmime.Base64Binary;
 
 

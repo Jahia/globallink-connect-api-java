@@ -3,14 +3,12 @@ package org.gs4tr.projectdirector.ws.service.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.gs4tr.projectdirector.model.dto.Project;
+import org.gs4tr.projectdirector.model.dto.xsd.Project;
 
 
 /**

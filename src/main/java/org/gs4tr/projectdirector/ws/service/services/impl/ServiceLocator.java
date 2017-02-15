@@ -14,7 +14,7 @@ import org.gs4tr.projectdirector.ws.headers.UserAgentHeaderHandler;
 
 public class ServiceLocator {
 
-    public static final String WS_VERSION = "_4130";
+    public static final String WS_VERSION = "_4180";
     private static final String HTTP_PREFIX = "http://";
     private static final String HTTP_PROXY_HOST = "http.proxyHost";
     private static final String HTTP_PROXY_PORT = "http.proxyPort";
@@ -59,35 +59,35 @@ public class ServiceLocator {
 	    }
 	};
 
-	SubmissionService4130 ss = new SubmissionService4130(getClass()
+	SubmissionService4180 ss = new SubmissionService4180(getClass()
 		.getResource("/wsdl/SubmissionService" + WS_VERSION + ".wsdl"));
 	ss.setHandlerResolver(handler);
 	submissionService = ss.getSubmissionServiceHttpSoap11Endpoint();
 	setupService((BindingProvider) submissionService, "SubmissionService",
 		url, enableMTOM, proxyHost, proxyPort, proxyUser, proxyPassword);
 
-	ProjectService4130 ps = new ProjectService4130(getClass().getResource(
+	ProjectService4180 ps = new ProjectService4180(getClass().getResource(
 		"/wsdl/ProjectService" + WS_VERSION + ".wsdl"));
 	ps.setHandlerResolver(handler);
 	projectService = ps.getProjectServiceHttpSoap11Endpoint();
 	setupService((BindingProvider) projectService, "ProjectService", url,
 		enableMTOM, proxyHost, proxyPort, proxyUser, proxyPassword);
 
-	DocumentService4130 ds = new DocumentService4130(getClass()
+	DocumentService4180 ds = new DocumentService4180(getClass()
 		.getResource("/wsdl/DocumentService" + WS_VERSION + ".wsdl"));
 	ds.setHandlerResolver(handler);
 	documentService = ds.getDocumentServiceHttpSoap11Endpoint();
 	setupService((BindingProvider) documentService, "DocumentService", url,
 		enableMTOM, proxyHost, proxyPort, proxyUser, proxyPassword);
 
-	TargetService4130 ts = new TargetService4130(getClass().getResource(
+	TargetService4180 ts = new TargetService4180(getClass().getResource(
 		"/wsdl/TargetService" + WS_VERSION + ".wsdl"));
 	ts.setHandlerResolver(handler);
 	targetService = ts.getTargetServiceHttpSoap11Endpoint();
 	setupService((BindingProvider) targetService, "TargetService", url,
 		enableMTOM, proxyHost, proxyPort, proxyUser, proxyPassword);
 	
-        UserProfileService4130 ups = new UserProfileService4130(getClass().getResource(
+        UserProfileService4180 ups = new UserProfileService4180(getClass().getResource(
 		"/wsdl/UserProfileService" + WS_VERSION + ".wsdl"));
         ups.setHandlerResolver(handler);
         userProfileService = ups.getUserProfileServiceHttpSoap11Endpoint(); 
@@ -95,7 +95,7 @@ public class ServiceLocator {
 		"UserProfileService", url, enableMTOM, proxyHost, proxyPort,
 		proxyUser, proxyPassword);
 
-	WorkflowService4130 ws = new WorkflowService4130(getClass()
+	WorkflowService4180 ws = new WorkflowService4180(getClass()
 		.getResource("/wsdl/WorkflowService" + WS_VERSION + ".wsdl"));
 	ws.setHandlerResolver(handler);
 	workflowService = ws.getWorkflowServiceHttpSoap11Endpoint();

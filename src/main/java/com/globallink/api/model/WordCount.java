@@ -3,17 +3,17 @@ package com.globallink.api.model;
 public class WordCount {
     private int exact_100;
     private int fuzzy;
-    private int golden;
+    private int inContextMatch;
     private int nomatch;
     private int repetitions;
     private int total;
 
-    public WordCount(int _golden, int _exact_100, int _repetitions,
+    public WordCount(int _inContextMatch, int _exact_100, int _repetitions,
 	    int _nomatch, int _total) {
 	super();
-	this.golden = _golden;
+	this.inContextMatch = _inContextMatch;
 	this.exact_100 = _exact_100;
-	this.fuzzy = _total - _golden - _exact_100 - _repetitions - _nomatch;
+	this.fuzzy = _total - _inContextMatch - _exact_100 - _repetitions - _nomatch;
 	this.repetitions = _repetitions;
 	this.nomatch = _nomatch;
 	this.total = _total;
@@ -27,8 +27,8 @@ public class WordCount {
 	return fuzzy;
     }
 
-    public int getGolden() {
-	return golden;
+    public int getInContextMatch() {
+	return inContextMatch;
     }
 
     public int getNomatch() {
@@ -51,8 +51,8 @@ public class WordCount {
 	this.fuzzy = fuzzy;
     }
 
-    public void setGolden(int golden) {
-	this.golden = golden;
+    public void setInContextMatch(int inContextMatch) {
+	this.inContextMatch = inContextMatch;
     }
 
     public void setNomatch(int nomatch) {

@@ -6,9 +6,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.gs4tr.projectdirector.model.dto.TiUserInfo;
-import org.gs4tr.projectdirector.model.dto.UserInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.TiUserInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.UserInfo;
 
 
 /**

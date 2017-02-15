@@ -1,6 +1,6 @@
 package com.globallink.api.model;
 
-import org.gs4tr.projectdirector.model.dto.ProjectCustomFieldConfiguration;
+import org.gs4tr.projectdirector.model.dto.xsd.ProjectCustomFieldConfiguration;
 
 /**
  * Each project can be configured to allow users to specify custom attributes

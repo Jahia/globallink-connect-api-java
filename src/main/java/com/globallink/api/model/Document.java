@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gs4tr.projectdirector.model.dto.DocumentInfo;
-import org.gs4tr.projectdirector.model.dto.Metadata;
-import org.gs4tr.projectdirector.model.dto.ResourceInfo;
-import org.gs4tr.projectdirector.model.dto.TargetInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.DocumentInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.Metadata;
+import org.gs4tr.projectdirector.model.dto.xsd.ResourceInfo;
+import org.gs4tr.projectdirector.model.dto.xsd.TargetInfo;
 
 public class Document extends ReferenceDocument {
 
@@ -23,14 +23,14 @@ public class Document extends ReferenceDocument {
 
 	private String instructions;
 
-	private HashMap<String,String> metadata = new HashMap<String,String>();
+	private Map<String,String> metadata = new HashMap<String,String>();
 
 	// Mandatory
 	private String sourceLanguage;
 
 	private String[] targetLanguages;
 
-	private HashMap<String,String> targetWorkflowNames = new HashMap<String,String>();
+	private Map<String,String> targetWorkflowNames = new HashMap<String,String>();
 
 	public Document() {
 		super();
@@ -82,15 +82,13 @@ public class Document extends ReferenceDocument {
 			documentInfo.setSubmissionTicket( tickets[tickets.length - 1] );
 		}
 		if( metadata != null && metadata.size() > 0 ) {
-			List<Metadata> pdMetadatas = new ArrayList<Metadata>();
 			for( Map.Entry<String,String> entry : metadata.entrySet() ) {
 				Metadata pdMetadata = new Metadata();
 				pdMetadata.setKey( entry.getKey().length() > 255 ? entry.getKey().substring( 0, 255 ) : entry.getKey() );
 				pdMetadata.setValue( entry.getValue().length() > 1024 ? entry.getValue().substring( 0, 1024 ) : entry
 						.getValue() );
-				pdMetadatas.add( pdMetadata );
+				documentInfo.getMetadata().add( pdMetadata );
 			}
-			documentInfo.setMetadata( pdMetadatas );
 		}
 		if( clientIdentifier != null ) {
 			documentInfo.setClientIdentifier( clientIdentifier );
@@ -101,7 +99,7 @@ public class Document extends ReferenceDocument {
 			documentInfo.setInstructions( submission.getInstructions() );
 		}
 
-		documentInfo.setTargetInfos( _getTargetInfos( submission ) );
+		documentInfo.getTargetInfos().addAll( _getTargetInfos( submission ) );
 
 		return documentInfo;
 	}
@@ -136,7 +134,7 @@ public class Document extends ReferenceDocument {
 		return targetLanguages;
 	}
 
-	public HashMap<String,String> getTargetWorkflowNames() {
+	public Map<String,String> getTargetWorkflowNames() {
 		return targetWorkflowNames;
 	}
 
@@ -193,7 +191,7 @@ public class Document extends ReferenceDocument {
 	 *            Metadata in Key-Value format
 	 */
 
-	public void setMetadata( HashMap<String,String> metadata ) {
+	public void setMetadata(Map<String,String> metadata ) {
 		this.metadata = metadata;
 	}
 
@@ -217,7 +215,7 @@ public class Document extends ReferenceDocument {
 		this.targetLanguages = targetLanguages;
 	}
 
-	public void setTargetWorkflowNames( HashMap<String,String> targetWorkflowNames ) {
+	public void setTargetWorkflowNames( Map<String,String> targetWorkflowNames ) {
 		this.targetWorkflowNames = targetWorkflowNames;
 	}
 
