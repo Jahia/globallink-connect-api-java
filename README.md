@@ -6,7 +6,7 @@ GlobalLink Connect java is a SDK to connect your system to GlobalLink [Project D
 
 ## Documentation
 
-Visit our [Wiki](https://github.com/translations-com/globallink-connect-api-java/wiki) or request assistance to your Translations.com PDM.
+Request assistance to your Translations.com PDM.
 
 ## Bugs and Issues
 
