@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="public" author="true" classpath="C:\WORKING_TEMP\03_GL_stuff\00_GLC\JAVA\Java_RM\01_Eclipse\target\test-classes;C:\Users\msanz\.m2\repository\junit\junit\4.8.2\junit-4.8.2.jar" destdir="C:\WORKING_TEMP\03_GL_stuff\00_GLC\JAVA\Java_RM\04_JavaDoc" doctitle="GLC Java API" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="com.globallink.api.config,com.globallink.api.model" source="1.8" sourcefiles="C:\WORKING_TEMP\03_GL_stuff\00_GLC\JAVA\Java_RM\01_Eclipse\src\main\java\com\globallink\api\GLExchange.java" sourcepath="C:\WORKING_TEMP\03_GL_stuff\00_GLC\JAVA\Java_RM\01_Eclipse\src\main\java;C:\WORKING_TEMP\03_GL_stuff\00_GLC\JAVA\Java_RM\01_Eclipse\target\generated-sources;C:\WORKING_TEMP\03_GL_stuff\00_GLC\JAVA\Java_RM\01_Eclipse\src\test\java;C:\WORKING_TEMP\03_GL_stuff\00_GLC\JAVA\Java_RM\01_Eclipse\src\main\resources" splitindex="true" use="true" version="true"/>
+    </target>
+</project>

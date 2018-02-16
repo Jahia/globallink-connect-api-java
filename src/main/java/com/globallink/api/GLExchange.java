@@ -10,6 +10,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import java.util.Set;
 import org.gs4tr.projectdirector.model.dto.xsd.DocumentInfo;
 import org.gs4tr.projectdirector.model.dto.xsd.DocumentTicket;
 import org.gs4tr.projectdirector.model.dto.xsd.DownloadActionResult;
+import org.gs4tr.projectdirector.model.dto.xsd.DownloadCollateralResult;
 import org.gs4tr.projectdirector.model.dto.xsd.ItemStatusEnum;
 import org.gs4tr.projectdirector.model.dto.xsd.Metadata;
 import org.gs4tr.projectdirector.model.dto.xsd.Priority;
@@ -507,19 +509,84 @@ public class GLExchange {
      * @param ticket
      *            Target ticket to download
      */
-
     public InputStream downloadCompletedTarget(String ticket) {
 	return new ByteArrayInputStream(
 		serviceLocator.getTargetService().downloadTargetResource(ticket).getData().getValue());
     }
 
+    /**
+     * Downloads target document from PD
+     * 
+     * @param Target
+     *            Target to download
+     */
     public Target downloadCompletedTarget(Target target) {
 	RepositoryItem item = serviceLocator.getTargetService().downloadTargetResource(target.getTicket());
 	target.setData(new ByteArrayInputStream(item.getData().getValue()));
 	target.setDocumentName(item.getResourceInfo().getName());
 	return target;
     }
+    
+    /**
+     * Downloads the collateral documents for a given submission
+     * 
+     * @param submissionTicket
+     *            Submission ticket
+     * @throws Exception 
+     */
+    public com.globallink.api.model.RepositoryItem downloadSubmissionCollateral(String submissionTicket) throws Exception {
+	return doDownloadCollateral(serviceLocator.getSubmissionService().downloadDeliverableCollateralBySubmissionTicket(submissionTicket));
+    }
 
+    /**
+     * Downloads the collateral documents for a given submission and the requested target languages
+     * 
+     * @param submissionTicket
+     *            Submission ticket
+     * @param targetLanguages
+     *            Array of requested target languages
+     * @throws Exception 
+     *            
+     */
+    public com.globallink.api.model.RepositoryItem downloadCollaterals(String submissionTicket, String[] targetLanguages) throws Exception
+    {
+	return doDownloadCollateral(serviceLocator.getSubmissionService().downloadDeliverableCollateralBySubmissionTicketAndTargetLanguages(submissionTicket, Arrays.asList(targetLanguages)));
+    }
+    
+    private com.globallink.api.model.RepositoryItem doDownloadCollateral(String ticket) throws Exception{
+	Boolean processingFinished = false;
+	int waitCycles = 0;
+	// Wait till processing finished
+	while (!processingFinished) {
+	    // sleep current thread for certain period
+	    Thread.sleep(DELAY_TIME);
+		
+	    waitCycles++;
+	    DownloadCollateralResult result = serviceLocator.getSubmissionService().checkDownloadDeliverableCollateral(ticket);
+	    processingFinished = result.isProcessingFinished();
+	    if(processingFinished){
+		if(result.getRepositoryItem()!=null){
+		    return new com.globallink.api.model.RepositoryItem(result.getRepositoryItem());
+		} else {
+		    throw new Exception(Arrays.toString(result.getErrorMessages().toArray()));
+		}
+	    }
+	    // avoid endless loop, exit after 10 min
+	    if (waitCycles == 300) {
+		break;
+	    }
+	}
+	return null;
+    }
+    
+    /**
+     * Downloads translation preview when the submission has not been completed
+     * 
+     * @param submissionWorkflowInfo
+     *            SubmissionWorkflowInfo object
+     * @param doClaim
+     *            Boolean doClaim
+     */
     public InputStream[] downloadPreliminaryTargets(SubmissionWorkflowInfo submissionWorkflowInfo, boolean doClaim)
 	    throws InterruptedException {
 
@@ -622,7 +689,13 @@ public class GLExchange {
 	}
 	return repositoryItems.toArray(new InputStream[repositoryItems.size()]);
     }
-
+    
+    /**
+     * Finds available workflowInfos for claim
+     * 
+     * @param limit
+     *            SubmissionWorkflowInfos limit
+     */
     public SubmissionWorkflowInfo[] findAvailableWorkflowInfosForClaim(int limit) {
 	List<SubmissionWorkflowInfo> result = serviceLocator.getWorkflowService()
 		.findAvailableWorkflowInfosForClaim(limit);
@@ -633,6 +706,12 @@ public class GLExchange {
 	}
     }
 
+    /**
+     * Finds available workflowInfos for download
+     * 
+     * @param limit
+     *            SubmissionWorkflowInfos limit
+     */
     public SubmissionWorkflowInfo[] findAvailableWorkflowInfosForDownload(int limit) {
 	List<SubmissionWorkflowInfo> result = serviceLocator.getWorkflowService()
 		.findAvailableWorkflowInfosForDownload(limit);
@@ -643,6 +722,12 @@ public class GLExchange {
 	}
     }
     
+    /**
+     * Finds available language directions for all available projects
+     * 
+     * @param limit
+     *            WorkflowInfos limit
+     */
     public Map<String, Set<String>> getAvailableLanguageDirections() throws Exception {
 	Map<String, Set<String>> result = new HashMap<String, Set<String>>();
 	for(Project project : projects){
@@ -659,6 +744,12 @@ public class GLExchange {
 	return result;
     }
 
+    /**
+     * Finds available target locales for all available projects
+     * 
+     * @param limit
+     *            WorkflowInfos limit
+     */
     public String[] getAvailableTargetLocales() throws Exception {
 	Set<String> targetLanguages = new HashSet<String>();
 	for(Project project : projects){
@@ -673,7 +764,6 @@ public class GLExchange {
 	List<SubmissionWorkflowInfo> swi = null;
 	if (STATE.equalsIgnoreCase("CLAIM")) {
 	    swi = serviceLocator.getWorkflowService().findAvailableWorkflowInfosForClaim(WORKFLOW_LIMIT);
-
 	} else if (STATE.equalsIgnoreCase("DOWNLOAD")) {
 	    swi = serviceLocator.getWorkflowService().findAvailableWorkflowInfosForDownload(WORKFLOW_LIMIT);
 	} else {
@@ -709,10 +799,10 @@ public class GLExchange {
     }
     
     /**
-     * Get cancelled targets for a list of submissions
+     * Get cancelled targets for a array of submissions
      * 
      * @param submissionTickets
-     *            List of submission tickets
+     *            Array of submission tickets
      * @param maxResults
      *            Maximum number of cancelled targets to return. This
      *            configuration is to avoid time-outs in case the number of
@@ -720,17 +810,17 @@ public class GLExchange {
      * @return Array of cancelled targets
      */
 
-    public Target[] getCancelledTargetsBySubmissions(List<String> submissionTickets, int maxResults) {
+    public Target[] getCancelledTargetsBySubmissions(String[] submissionTickets, int maxResults) {
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
-		.getCanceledTargetsBySubmissions(submissionTickets, maxResults);
+		.getCanceledTargetsBySubmissions(Arrays.asList(submissionTickets), maxResults);
 	return _convertTargetsToInternal(targets);
     }
     
     /**
-     * Get cancelled targets for a list of documents
+     * Get cancelled targets for an array of document tickets
      * 
      * @param documentTickets
-     *            List of document tickets
+     *            Array of document tickets
      * @param maxResults
      *            Maximum number of cancelled targets to return. This
      *            configuration is to avoid time-outs in case the number of
@@ -738,17 +828,17 @@ public class GLExchange {
      * @return Array of cancelled targets
      */
 
-    public Target[] getCancelledTargetsByDocuments(List<String> documentTickets, int maxResults) {
+    public Target[] getCancelledTargetsByDocuments(String[] documentTickets, int maxResults) {
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
-		.getCanceledTargetsByDocuments(documentTickets, maxResults);
+		.getCanceledTargetsByDocuments(Arrays.asList(documentTickets), maxResults);
 	return _convertTargetsToInternal(targets);
     }
     
     /**
-     * Get cancelled targets for a list of documents
+     * Get cancelled targets for an array of projects
      * 
-     * @param documentTickets
-     *            List of document tickets
+     * @param projects
+     *            Array of projects
      * @param maxResults
      *            Maximum number of cancelled targets to return. This
      *            configuration is to avoid time-outs in case the number of
@@ -756,13 +846,31 @@ public class GLExchange {
      * @return Array of cancelled targets
      */
 
-    public Target[] getCancelledTargetsByProjects(List<Project> projects, int maxResults) {
+    public Target[] getCancelledTargetsByProjects(Project[] projects, int maxResults) {
 	List<String> tickets = new ArrayList<String>();
 	for(Project project : projects){
 	    tickets.add(project.getTicket());
 	}
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
 		.getCanceledTargetsByProjects(tickets, maxResults);
+	return _convertTargetsToInternal(targets);
+    }
+    
+    /**
+     * Get cancelled targets for an array of project tickets
+     * 
+     * @param projects
+     *            Array of project tickets
+     * @param maxResults
+     *            Maximum number of cancelled targets to return. This
+     *            configuration is to avoid time-outs in case the number of
+     *            targets is very large.
+     * @return Array of cancelled targets
+     */
+
+    public Target[] getCancelledTargetsByProjectTickets(String[] projectTickets, int maxResults) {
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCanceledTargetsByProjects(Arrays.asList(projectTickets), maxResults);
 	return _convertTargetsToInternal(targets);
     }
 
@@ -778,10 +886,10 @@ public class GLExchange {
      * @return Array of cancelled targets
      */
 
-    public Target[] getCancelledTargets(String submissionTicket, int maxResults) {
-	List<String> tickets = new ArrayList<String>();
-	tickets.add(submissionTicket);
-	return getCancelledTargetsBySubmissions(tickets, maxResults);
+    public Target[] getCancelledTargetsBySubmission(String submissionTicket, int maxResults) {
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCanceledTargetsBySubmissions(Arrays.asList(submissionTicket), maxResults);
+	return _convertTargetsToInternal(targets);
     }
 
     /**
@@ -802,22 +910,38 @@ public class GLExchange {
     }
     
     /**
-     * Get completed targets for list of projects
+     * Get completed targets for array of projects
      * 
      * @param projects
-     *            List of projects for which completed targets are requested
+     *            Array of projects for which completed targets are requested
      * @param maxResults
      *            Maximum number of completed targets to return in this call.
      * @return Array of completed targets
      */
 
-    public Target[] getCompletedTargetsByProjects(List<Project> projects, int maxResults) {
+    public Target[] getCompletedTargetsByProjects(Project[] projects, int maxResults) {
 	List<String> tickets = new ArrayList<String>();
 	for(Project project : projects){
 	    tickets.add(project.getTicket());
 	}
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
 		.getCompletedTargetsByProjects(tickets, maxResults);
+	return _convertTargetsToInternal(targets);
+    }
+    
+    /**
+     * Get completed targets for array of project tickets
+     * 
+     * @param projectTickets
+     *            Array of project tickets for which completed targets are requested
+     * @param maxResults
+     *            Maximum number of completed targets to return in this call.
+     * @return Array of completed targets
+     */
+
+    public Target[] getCompletedTargetsByProjectTickets(String[] projectTickets, int maxResults) {
+	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
+		.getCompletedTargetsByProjects(Arrays.asList(projectTickets), maxResults);
 	return _convertTargetsToInternal(targets);
     }
 
@@ -831,7 +955,7 @@ public class GLExchange {
      * @return Array of completed targets
      */
 
-    public Target[] getCompletedTargets(Project project, int maxResults) {
+    public Target[] getCompletedTargetsByProject(Project project, int maxResults) {
 	List<String> tickets = new ArrayList<String>();
 	tickets.add(project.getTicket());
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
@@ -848,9 +972,9 @@ public class GLExchange {
      *            Maximum number of completed targets to return in this call.
      * @return Array of completed targets
      */
-    public Target[] getCompletedTargetsBySubmissions(List<String> submissionTickets, int maxResults) {
+    public Target[] getCompletedTargetsBySubmissions(String[] submissionTickets, int maxResults) {
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
-		.getCompletedTargetsBySubmissions(submissionTickets, maxResults);
+		.getCompletedTargetsBySubmissions(Arrays.asList(submissionTickets), maxResults);
 	return _convertTargetsToInternal(targets);
     }
 
@@ -863,26 +987,24 @@ public class GLExchange {
      *            Maximum number of completed targets to return in this call.
      * @return Array of completed targets
      */
-    public Target[] getCompletedTargets(String submissionTicket, int maxResults) {
-	List<String> tickets = new ArrayList<String>();
-	tickets.add(submissionTicket);
+    public Target[] getCompletedTargetsBySubmission(String submissionTicket, int maxResults) {
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
-		.getCompletedTargetsBySubmissions(tickets, maxResults);
+		.getCompletedTargetsBySubmissions(Arrays.asList(submissionTicket), maxResults);
 	return _convertTargetsToInternal(targets);
     }
     
     /**
-     * Get completed targets by document tickets
+     * Get completed targets by array of document tickets
      * 
      * @param documentTickets
-     *            List of document tickets
+     *            Array of document tickets
      * @param maxResults
      *            Maximum number of completed targets to return in this call.
      * @return Array of completed targets
      */
-    public Target[] getCompletedTargetsByDocuments(List<String> documentTickets, int maxResults) {
+    public Target[] getCompletedTargetsByDocuments(String[] documentTickets, int maxResults) {
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
-		.getCompletedTargetsByDocuments(documentTickets, maxResults);
+		.getCompletedTargetsByDocuments(Arrays.asList(documentTickets), maxResults);
 	return _convertTargetsToInternal(targets);
     }
     
@@ -899,7 +1021,7 @@ public class GLExchange {
 	List<String> tickets = new ArrayList<String>();
 	tickets.add(documentTicket);
 	List<org.gs4tr.projectdirector.model.dto.xsd.Target> targets = serviceLocator.getTargetService()
-		.getCompletedTargetsByDocuments(tickets, maxResults);
+		.getCompletedTargetsByDocuments(Arrays.asList(documentTicket), maxResults);
 	return _convertTargetsToInternal(targets);
     }
 
@@ -1052,15 +1174,15 @@ public class GLExchange {
     /**
      * Get Submission status for specified ticket.
      * 
-     * @return True if submission is complete.
+     * @return Submission status in ItemStatusEnum object
      * @throws Exception
      */
-    public String getSubmissionStatus(String submissionTicket) throws Exception {
+    public com.globallink.api.model.ItemStatusEnum getSubmissionStatus(String submissionTicket) throws Exception {
 	org.gs4tr.projectdirector.model.dto.xsd.Submission sub = serviceLocator.getSubmissionService()
 		.findByTicket(submissionTicket);
 
 	if (sub != null) {
-	    return sub.getStatus().getName();
+	    return new com.globallink.api.model.ItemStatusEnum(sub.getStatus().getValue());
 	} else {
 	    return null;
 	}
