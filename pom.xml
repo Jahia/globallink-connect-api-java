@@ -11,7 +11,7 @@
   <version>4.18.3</version>
   <packaging>jar</packaging>
   <name>globallink-connect-restclient</name>
-  <description>GlobalLink Connect Cloud java is a library to connect your system to GlobalLink Connect Cloud REST API.</description>
+  <description>GlobalLink Connect java is a SDK to connect your system to GlobalLink Project Director's API.</description>
   <url>http://www.translations.com/globallink/products/globallink_connect.html</url>
   <licenses>
     <license>
@@ -77,7 +77,7 @@
           </execution>
         </executions>
       </plugin>
-      <!--<plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
@@ -95,7 +95,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>-->
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -177,7 +177,7 @@
           </execution>
         </executions>
       </plugin>
-      <!--<plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
         <executions>
@@ -189,7 +189,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>-->
+      </plugin>
     </plugins>
   </build>
   <distributionManagement>
