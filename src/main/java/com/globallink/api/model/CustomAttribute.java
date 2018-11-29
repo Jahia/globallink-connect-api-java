@@ -10,11 +10,15 @@ import org.gs4tr.projectdirector.model.dto.xsd.ProjectCustomFieldConfiguration;
  * to invoice by cost-center
  */
 public class CustomAttribute {
+    
+    public static final String TYPE_TEXT = "TEXT";
+    public static final String TYPE_COMBO = "COMBO";
 
     public boolean mandatory;
     public String name;
     public String type;
     public String values;
+    public String[] valuesArray;
 
     public CustomAttribute(boolean mandatory, String name, String type,
 	    String values) {
@@ -22,12 +26,12 @@ public class CustomAttribute {
 	this.name = name;
 	this.type = type;
 	this.values = values;
+	if(TYPE_COMBO.equals(this.type) && this.values!=null && this.values.trim().length()>0){
+	    valuesArray = values.split(",");
+	}
     }
 
     public CustomAttribute(ProjectCustomFieldConfiguration customField) {
-	this.name = customField.getName();
-	this.type = customField.getType();
-	this.values = customField.getValues();
-	this.mandatory = customField.isMandatory();
+	this(customField.isMandatory(), customField.getName(), customField.getType(), customField.getValues());
     }
 }

@@ -26,6 +26,7 @@ import org.gs4tr.projectdirector.model.dto.xsd.DownloadCollateralResult;
 import org.gs4tr.projectdirector.model.dto.xsd.ItemStatusEnum;
 import org.gs4tr.projectdirector.model.dto.xsd.Metadata;
 import org.gs4tr.projectdirector.model.dto.xsd.Priority;
+import org.gs4tr.projectdirector.model.dto.xsd.ProjectAClient;
 import org.gs4tr.projectdirector.model.dto.xsd.RepositoryItem;
 import org.gs4tr.projectdirector.model.dto.xsd.ResourceInfo;
 import org.gs4tr.projectdirector.model.dto.xsd.SubmissionCustomFields;
@@ -416,23 +417,57 @@ public class GLExchange {
 		throw new Exception("Invalid submission workflow '" + submission.getWorkflow().name);
 	    }
 	}
-
-	if (submission.getProject().getCustomAttributes() != null) {
+	
+	if (submission.getProject().getCustomAttributes() != null && submission.getProject().getCustomAttributes().length > 0) {
 	    for (CustomAttribute custom : submission.getProject().getCustomAttributes()) {
 		if (custom.mandatory) {
 		    Boolean isSet = false;
-		    for (Map.Entry<String, String> entry : submission.getCustomAttributes().entrySet()) {
-			if (entry.getKey().equals(custom.name)) {
-			    isSet = true;
-			    break;
-			}
+		    if(submission.getCustomAttributes()!=null && !submission.getCustomAttributes().isEmpty()){
+        		for (Map.Entry<String, String> entry : submission.getCustomAttributes().entrySet()) {
+        		    if (entry.getKey().equals(custom.name)) {
+        			isSet = true;
+        			break;
+        		    }
+		    	}
 		    }
 		    if (!isSet) {
 			throw new Exception("Mandatory custom field '" + custom.name + "' is not set");
 		    }
 		}
 	    }
+	    if(submission.getCustomAttributes()!=null && !submission.getCustomAttributes().isEmpty()){
+		for (Map.Entry<String, String> entry : submission.getCustomAttributes().entrySet()) {
+		    Boolean isExists = false;
+		    for (CustomAttribute custom : submission.getProject().getCustomAttributes()) {
+			if(custom.name.equals(entry.getKey())){
+			    if(custom.type.equals(CustomAttribute.TYPE_COMBO) && custom.values!=null && custom.values.trim().length()>0){
+				Boolean comboValueCorrect = false;
+				for(String option : custom.valuesArray){
+				    if(option.equals(entry.getValue())){
+					isExists = true;
+					comboValueCorrect = true;
+					break;
+				    }
+				}
+				if(!comboValueCorrect){
+				    throw new Exception("Value '"+entry.getValue()+"' for custom field '" + custom.name + "' is not allowed. Allowed values:"+custom.values);
+				}
+			    } else {
+				isExists = true;
+			    }
+			}
+		    }
+		    if(!isExists){
+			throw new Exception("Custom field '" + entry.getKey() + "' is not allowed in project");
+		    }
+	    	}
+	    }
+	} else {
+	    if(submission.getCustomAttributes()!=null && !submission.getCustomAttributes().isEmpty()){
+		throw new Exception("Project doesn't have custom attributes");
+	    }
 	}
+	
 	if (!_isEmpty(submission.getSubmitter())) {
 	    if (!_isSubmitterValid(submission.getProject().getShortcode(), submission.getSubmitter())) {
 		throw new Exception("Specified submitter '" + submission.getSubmitter()
@@ -579,23 +614,11 @@ public class GLExchange {
 	return null;
     }
     
-    /**
-     * Downloads translation preview when the submission has not been completed
-     * 
-     * @param submissionWorkflowInfo
-     *            SubmissionWorkflowInfo object
-     * @param doClaim
-     *            Boolean doClaim
-     */
-    public InputStream[] downloadPreliminaryTargets(SubmissionWorkflowInfo submissionWorkflowInfo, boolean doClaim)
+    public void claimSubmission(SubmissionWorkflowInfo submissionWorkflowInfo)
 	    throws InterruptedException {
-
-	List<InputStream> repositoryItems = new ArrayList<InputStream>();
 	List<String> submissionTickets = new ArrayList<String>();
 	submissionTickets.add(submissionWorkflowInfo.getSubmissionTicket());
-	// 1. Claim
-	if (doClaim) {
-	    WorkflowRequest workflowRequestForClaim = _createWorkflowRequest(submissionWorkflowInfo);
+	WorkflowRequest workflowRequestForClaim = _createWorkflowRequest(submissionWorkflowInfo);
 
 	    serviceLocator.getWorkflowService().claim(workflowRequestForClaim);
 
@@ -616,6 +639,25 @@ public class GLExchange {
 		    break;
 		}
 	    }
+    }
+    
+    /**
+     * Downloads translation preview when the submission has not been completed
+     * 
+     * @param submissionWorkflowInfo
+     *            SubmissionWorkflowInfo object
+     * @param doClaim
+     *            Boolean doClaim
+     */
+    public InputStream[] downloadPreliminaryTargets(SubmissionWorkflowInfo submissionWorkflowInfo, boolean doClaim)
+	    throws InterruptedException {
+
+	List<InputStream> repositoryItems = new ArrayList<InputStream>();
+	List<String> submissionTickets = new ArrayList<String>();
+	submissionTickets.add(submissionWorkflowInfo.getSubmissionTicket());
+	// 1. Claim
+	if (doClaim) {
+	    claimSubmission(submissionWorkflowInfo);
 	}
 
 	// 2. Wait until all claimed become available for download
@@ -1044,6 +1086,12 @@ public class GLExchange {
 	    return new LanguagePhaseInfo(result);
 	}
 	return null;
+    }
+    
+    public ProjectAClient getProjectAClient(String name)
+    {
+	return serviceLocator.getProjectAClientService().findByName(name);
+
     }
 
     /**

@@ -3,6 +3,8 @@ package org.gs4tr.projectdirector.ws.service.services.impl;
 
 import javax.xml.bind.annotation.XmlRegistry;
 
+import org.gs4tr.projectdirector.model.dto.xsd.ProjectAClient;
+
 
 /**
  * This object contains factory methods for each 
@@ -931,6 +933,46 @@ public class ObjectFactory {
      */
     public GetSubmitters createGetSubmitters() {
         return new GetSubmitters();
+    }
+    
+    /**
+     * Create an instance of {@link FindByNameResponse }
+     * 
+     */
+    public FindProjectAClientByNameResponse createFindProjectAClientByNameResponse() {
+        return new FindProjectAClientByNameResponse();
+    }
+
+    /**
+     * Create an instance of {@link ProjectAClient }
+     * 
+     */
+    public ProjectAClient createProjectAClient() {
+        return new ProjectAClient();
+    }
+
+    /**
+     * Create an instance of {@link FindByOrganizationNameResponse }
+     * 
+     */
+    public FindProjectAClientByOrganizationNameResponse createFindProjectAClientByOrganizationNameResponse() {
+        return new FindProjectAClientByOrganizationNameResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindByName }
+     * 
+     */
+    public FindProjectAClientByName createFindProjectAClientByName() {
+        return new FindProjectAClientByName();
+    }
+
+    /**
+     * Create an instance of {@link FindByOrganizationName }
+     * 
+     */
+    public FindProjectAClientByOrganizationName createFindProjectAClientByOrganizationName() {
+        return new FindProjectAClientByOrganizationName();
     }
 
 }

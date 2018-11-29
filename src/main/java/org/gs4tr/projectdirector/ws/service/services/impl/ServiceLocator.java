@@ -31,6 +31,7 @@ public class ServiceLocator {
     private TargetServicePortType targetService;
     private UserProfileServicePortType userProfileService;
     private WorkflowServicePortType workflowService;
+    private ProjectAClientServicePortType projectAClientService;
 
     public ServiceLocator(String pdUrl, final String username,
 	    final String password, final String userAgent, Boolean enableMTOM) {
@@ -40,8 +41,8 @@ public class ServiceLocator {
 
     public ServiceLocator(String pdUrl, final String username,
 	    final String password, final String userAgent, Boolean enableMTOM,
-	    String proxyHost, int proxyPort, String proxyUser,
-	    String proxyPassword) {
+	    String proxyHost, int proxyPort, final String proxyUser,
+	    final String proxyPassword) {
 	String url = pdUrl;
 	if (!url.endsWith("/")) {
 	    url = url + "/";
@@ -58,6 +59,7 @@ public class ServiceLocator {
 		return handlerList;
 	    }
 	};
+	
 
 	SubmissionService4180 ss = new SubmissionService4180(getClass()
 		.getResource("/wsdl/SubmissionService" + WS_VERSION + ".wsdl"));
@@ -101,6 +103,29 @@ public class ServiceLocator {
 	workflowService = ws.getWorkflowServiceHttpSoap11Endpoint();
 	setupService((BindingProvider) workflowService, "WorkflowService", url,
 		enableMTOM, proxyHost, proxyPort, proxyUser, proxyPassword);
+	
+	ProjectAClientService4180 pacs = new ProjectAClientService4180(getClass()
+		.getResource("/wsdl/ProjectAClientService" + WS_VERSION + ".wsdl"));
+	pacs.setHandlerResolver(handler);
+	projectAClientService = pacs.getProjectAClientServiceHttpSoap11Endpoint();
+	setupService((BindingProvider) projectAClientService, "ProjectAClientService", url,
+		enableMTOM, proxyHost, proxyPort, proxyUser, proxyPassword);
+	
+	if (proxyHost != null) {
+		System.setProperty("proxyHost", proxyHost);
+		System.setProperty("proxyPort", ""+proxyPort);
+		if (proxyUser != null && proxyUser.trim().length() > 0 && proxyPassword != null && proxyPassword.trim().length() > 0) {
+			java.net.Authenticator.setDefault(
+	          new java.net.Authenticator() {
+	            public java.net.PasswordAuthentication getPasswordAuthentication() {
+	              return new java.net.PasswordAuthentication(
+	                proxyUser, proxyPassword.toCharArray()
+	              );
+	            }
+	          }
+	        );
+		}
+	}
     }
 
     private void setupService(BindingProvider bp, String serviceName,
@@ -129,7 +154,8 @@ public class ServiceLocator {
 	}
 	SOAPBinding binding = (SOAPBinding) bp.getBinding();
 	binding.setMTOMEnabled(enableMTOM);
-
+	
+	
     }
 
     public ProjectServicePortType getProjectService() {
@@ -155,4 +181,9 @@ public class ServiceLocator {
     public WorkflowServicePortType getWorkflowService() {
 	return this.workflowService;
     }
+
+    public ProjectAClientServicePortType getProjectAClientService() {
+	return projectAClientService;
+    }
+
 }

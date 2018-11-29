@@ -97,15 +97,10 @@ public class ItemStatusEnum {
 	this.value = value;
     }
 
-    protected String name;
     protected int value;
 
     public String getName() {
-	return name;
-    }
-
-    public void setName(String value) {
-	this.name = value;
+	return names[getValue()];
     }
 
     /**
