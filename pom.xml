@@ -11,6 +11,17 @@
   <version>4.18.4-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>GlobalLink Client Library</name>
+    <description>GlobalLink Connect Java is a library to connect your system to GlobalLink Project Director SOAP API.</description>
+  <url>http://www.translations.com/globallink/products/globallink_connect.html</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers/>
+
   <scm>
     <connection>scm:git:https://github.com/translations-com/globallink-connect-api-java</connection>
     <developerConnection>scm:git:https://github.com/translations-com/globallink-connect-api-java.git</developerConnection>
@@ -105,6 +116,42 @@
           </execution>
         </executions>
       </plugin>
+        <!--<groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <_nouses>true</_nouses>
+            <Bundle-Version>${version}-${maven.build.timestamp}</Bundle-Version>
+            <Bundle-Vendor>GS4TR</Bundle-Vendor>
+            <Bundle-ClassPath>.</Bundle-ClassPath>
+            <Bundle-Localization>plugin</Bundle-Localization>
+            <Bundle-Name>GLC SOAP Services Client Plug-in</Bundle-Name>
+            <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+            <Bundle-SymbolicName>org.gs4tr.glc.restclient</Bundle-SymbolicName>
+            <Eclipse-LazyStart>false</Eclipse-LazyStart>
+            <Import-Package>*
+            </Import-Package>
+            <Export-Package>com.globallink.api,
+            com.globallink.api.config,
+            com.globallink.api.model,
+            org.gs4tr.projectdirector.model.dto.xsd,
+            org.gs4tr.projectdirector.ws.headers
+            org.gs4tr.projectdirector.ws.service.services.impl
+            org.ws._2005._05.xmlmime
+            </Export-Package>
+          </instructions>
+        </configuration>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>bundle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>-->
     <!-- not needed -->
       <!--<plugin>
         <groupId>org.gs4tr.maven.plugins</groupId>
