@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>7</version>
-	</parent>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.translations.globallink</groupId>
   <artifactId>globallink-connect-api</artifactId>
   <version>4.18.4-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>GlobalLink Client Library</name>
-	<scm>
-		<connection>scm:git:https://github.com/translations-com/globallink-connect-api-java</connection>
-		<developerConnection>scm:git:https://github.com/translations-com/globallink-connect-api-java.git</developerConnection>
-		<url>https://github.com/translations-com/globallink-connect-api-jav</url>
-	</scm>
+  <scm>
+    <connection>scm:git:https://github.com/translations-com/globallink-connect-api-java</connection>
+    <developerConnection>scm:git:https://github.com/translations-com/globallink-connect-api-java.git</developerConnection>
+    <url>https://github.com/translations-com/globallink-connect-api-jav</url>
+  </scm>
 
   <properties>
     <versionPackageName>org.gs4tr.projectdirector.adaptors.glcl.java</versionPackageName>
@@ -105,6 +105,7 @@
           </execution>
         </executions>
       </plugin>
+    <!-- not needed -->
       <!--<plugin>
         <groupId>org.gs4tr.maven.plugins</groupId>
         <artifactId>gs4tr-maven-version-plugin</artifactId>
@@ -121,6 +122,26 @@
           <execution>
             <goals>
               <goal>version</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>-->
+    <!--Doc plugins -->
+      <!--<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <quiet>true</quiet>
+          <nonavbar>true</nonavbar>
+          <notree>true</notree>
+          <nocomment>true</nocomment>
+          <nohelp>true</nohelp>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
             </goals>
           </execution>
         </executions>
