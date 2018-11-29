@@ -1,20 +1,22 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
-    <groupId>org.gs4tr</groupId>
-    <artifactId>gs4tr</artifactId>
-    <version>10</version>
-  </parent>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.gs4tr.projectdirector.adaptors</groupId>
+  <groupId>com.translations.globallink</groupId>
   <artifactId>globallink-connect-api</artifactId>
   <version>4.18.4-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>GlobalLink Client Library</name>
-  <scm>
-    <connection>scm:svn:${development.server}/products/projectdirector-adaptors/projectdirector-adaptors-glcapi.java/trunk</connection>
-    <developerConnection>scm:svn:${development.server}/products/projectdirector-adaptors/projectdirector-adaptors-glcapi.java/trunk</developerConnection>
-  </scm>
+	<scm>
+		<connection>scm:git:https://github.com/translations-com/globallink-connect-api-java</connection>
+		<developerConnection>scm:git:https://github.com/translations-com/globallink-connect-api-java.git</developerConnection>
+		<url>https://github.com/translations-com/globallink-connect-api-jav</url>
+	</scm>
+
   <properties>
     <versionPackageName>org.gs4tr.projectdirector.adaptors.glcl.java</versionPackageName>
     <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss.SSSZ</maven.build.timestamp.format>
@@ -103,7 +105,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+      <!--<plugin>
         <groupId>org.gs4tr.maven.plugins</groupId>
         <artifactId>gs4tr-maven-version-plugin</artifactId>
         <version>${releaseControl.version}</version>
@@ -122,7 +124,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin>-->
     </plugins>
   </build>
   <distributionManagement>
