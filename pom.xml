@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.translations.globallink</groupId>
   <artifactId>globallink-connect-api</artifactId>
-  <version>4.18.4</version>
+  <version>4.18.5-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>GlobalLink Client Library</name>
     <description>GlobalLink Connect Java is a library to connect your system to GlobalLink Project Director SOAP API.</description>
