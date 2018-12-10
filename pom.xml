@@ -197,16 +197,16 @@
   </build>
   <distributionManagement>
     <!-- Repository for snapshots -->
-    <repository>
+    <!--<repository>
       <name>Snapshots Repository</name> 
       <id>sonatype-nexus-snapshots</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
+    </repository>-->
     <!-- Repository for releases -->
-    <!--<repository>
+    <repository>
       <id>nexus-releases</id>
       <name>Nexus Release Repository</name> 
       <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository> -->
+    </repository>
   </distributionManagement>
 </project>
