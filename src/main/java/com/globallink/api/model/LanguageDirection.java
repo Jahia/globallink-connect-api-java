@@ -8,8 +8,10 @@ import org.gs4tr.projectdirector.model.dto.xsd.ProjectLanguageDirection;
  */
 public class LanguageDirection {
 
-    public String sourceLanguage;
+	public String sourceLanguage;
     public String targetLanguage;
+    public String sourceLanguageValue;
+    public String targetLanguageValue;
     /**
      * Will be implemented for release 5.0
      */
@@ -19,5 +21,7 @@ public class LanguageDirection {
 	super();
 	this.sourceLanguage = direction.getSourceLanguage().getLocale();
 	this.targetLanguage = direction.getTargetLanguage().getLocale();
+	this.sourceLanguageValue = direction.getSourceLanguage().getValue();
+	this.targetLanguageValue = direction.getTargetLanguage().getValue();
     }
 }
