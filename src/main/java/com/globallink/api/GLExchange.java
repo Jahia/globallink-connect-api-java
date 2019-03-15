@@ -1163,6 +1163,43 @@ public class GLExchange {
 	    throw new Exception("Invalid submission ticket");
 	}
     }
+    
+    /**
+	 * Get Submission for specified ticket.
+	 * 
+	 * @return Submission DueDate for the specified ticket.
+	 * @throws Exception
+	 */
+	public Date getSubmissionDueDate(String submissionTicket) throws Exception {
+		org.gs4tr.projectdirector.model.dto.xsd.Submission sub = serviceLocator.getSubmissionService().findByTicket(submissionTicket);
+		if (sub != null) {
+			Date dueDate = new Date(sub.getDueDate().getDate());
+			return dueDate;
+		} else {
+			throw new Exception("Invalid submission ticket");
+		}
+	}
+
+	/**
+	 * Get Submission custom fields for specified ticket.
+	 * 
+	 * @return Map containing submission custom fields for the specified ticket.
+	 * @throws Exception
+	 */
+	public Map<String, String> getSubmissionCustomFields(String submissionTicket) throws Exception {
+		org.gs4tr.projectdirector.model.dto.xsd.Submission sub = serviceLocator.getSubmissionService().findByTicket(submissionTicket);
+		Map<String, String> submissionCustomFieldMap = new HashMap<String, String>();
+		if (sub != null) {
+			
+			List<SubmissionCustomFields> submissionCustomFields = sub.getSubmissionInfo().getSubmissionCustomFields();
+			for(SubmissionCustomFields submissionCustomField : submissionCustomFields){
+				submissionCustomFieldMap.put(submissionCustomField.getFieldName(), submissionCustomField.getFieldValue());
+			}
+			return submissionCustomFieldMap;
+		} else {
+			throw new Exception("Invalid submission ticket");
+		}
+	}
 
     /**
      * Get Submission ticket if a submission has been initialized.
